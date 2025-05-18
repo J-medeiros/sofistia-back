@@ -47,12 +47,12 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
 
     $sql = "INSERT INTO sofistia.produtos
 (nome, descricao, valor, image) VALUES ('{$data['nome']}', '{$data['descricao']}', '{$data['valor']}', '{$data['image']}');";
-
     if ($conn->query($sql) === TRUE) {
-        $message = "Inserido com sucesso!!";
+        echo json_encode(["success" => true, "message" => "Inserido com sucesso"]);
     } else {
-        $message = "Error: " . $sql . "<br>" . $conn->error;
+        echo json_encode(["success" => false, "message" => "Erro: " . $conn->error]);
     }
+
 
     // Metodo de editar dados
 } else if ($_SERVER['REQUEST_METHOD'] === 'PUT') {

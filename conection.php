@@ -1,9 +1,9 @@
 <?php
 
-$servername ="localhost";
-$username ="root";
-$password ="";
-$dbname ="Sofistia";
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "Sofistia";
 
 $conn  = new mysqli($servername, $username, $password, $dbname);
 
@@ -14,11 +14,4 @@ if ($conn->connect_error) {
         "message" => "Erro ao conectar ao banco de dados",
         "error" => $conn->connect_error
     ]);
-} else {
-     echo json_encode([
-     "success" => true,
-     "message" => "Connection already established",
-     ]);
-    return;
 }
-?>

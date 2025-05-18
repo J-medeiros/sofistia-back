@@ -59,10 +59,11 @@ inner join sofistia.mesa m on p.idMesa = m.id";
     ('{$data['idMesa']}', '{$data['idProduto']}', '{$data['status']}');";
 
     if ($conn->query($sql) === TRUE) {
-        $message = "Inserido com sucesso!!";
+        echo json_encode(["success" => true, "message" => "Inserido com sucesso!!"]);
     } else {
-        $message = "Error: " . $sql . "<br>" . $conn->error;
+        echo json_encode(["success" => false, "message" => "Erro: " . $conn->error]);
     }
+
 
     // Metodo de editar dados
 } else if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
