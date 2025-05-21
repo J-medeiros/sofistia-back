@@ -80,3 +80,6 @@ header("Access-Control-Allow-Headers: Content-Type");
 * Validações e autenticação.
 
 * Organização com rotas e controllers.
+
+#### ✅ CI configurado com GitHub Actions
+✔️ Executa PHPUnit automaticamente a cada push para main
