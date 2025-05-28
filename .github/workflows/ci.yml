@@ -19,7 +19,12 @@ jobs:
           
       - name: Clear Composer Cache
         run: composer clear-cache
-        
+      - name: List vendor directory
+        run: ls -la /home/runner/work/sofistia-back-end/sofistia-back-end/vendor/phpunit/phpunit/
+      
+      - name: Check permissions
+        run: stat /home/runner/work/sofistia-back-end/sofistia-back-end/vendor/phpunit/phpunit/src/
+
       - name: Install dependencies
         run: composer install --no-progress --prefer-dist --verbose
 
