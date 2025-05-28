@@ -21,7 +21,7 @@ jobs:
         run: composer clear-cache
         
       - name: Install dependencies
-        run: composer install --no-progress --prefer-dist
+        run: composer install 
 
       - name: Run PHPUnit
         run: vendor/bin/phpunit --testdox
