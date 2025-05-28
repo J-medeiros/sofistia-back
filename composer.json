@@ -1,5 +1,10 @@
 {
-    "require-dev": {
-        "phpunit/phpunit": "^12.0"
-    }
+  "require-dev": {
+    "phpunit/phpunit": "^12.0"
+  },
+  "autoload": {
+    "exclude-from-classmap": [
+      "vendor/staabm/side-effects-detector/lib/"
+    ]
+  }
 }
