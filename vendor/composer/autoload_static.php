@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitc848deb162c127f06d04adc9d9887a67
+class ComposerStaticInit1e29d84a51b0a6cadf6b8e5e44fe1240
 {
     public static $files = array (
         '6124b4c8570aa390c21fafd04a26c69f' => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy/deep_copy.php',
@@ -1255,14 +1255,16 @@ class ComposerStaticInitc848deb162c127f06d04adc9d9887a67
         'TheSeer\\Tokenizer\\TokenCollectionException' => __DIR__ . '/..' . '/theseer/tokenizer/src/TokenCollectionException.php',
         'TheSeer\\Tokenizer\\Tokenizer' => __DIR__ . '/..' . '/theseer/tokenizer/src/Tokenizer.php',
         'TheSeer\\Tokenizer\\XMLSerializer' => __DIR__ . '/..' . '/theseer/tokenizer/src/XMLSerializer.php',
+        'staabm\\SideEffectsDetector\\SideEffect' => __DIR__ . '/..' . '/staabm/side-effects-detector/lib/SideEffect.php',
+        'staabm\\SideEffectsDetector\\SideEffectsDetector' => __DIR__ . '/..' . '/staabm/side-effects-detector/lib/SideEffectsDetector.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitc848deb162c127f06d04adc9d9887a67::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitc848deb162c127f06d04adc9d9887a67::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInitc848deb162c127f06d04adc9d9887a67::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit1e29d84a51b0a6cadf6b8e5e44fe1240::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit1e29d84a51b0a6cadf6b8e5e44fe1240::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit1e29d84a51b0a6cadf6b8e5e44fe1240::$classMap;
 
         }, null, ClassLoader::class);
     }
