@@ -2,7 +2,7 @@
 FROM php:8.2-apache
 
 # Instala extensões necessárias (inclui PDO e mysqli para conexão com banco)
-RUN docker-php-ext-install pdo pdo_mysql mysqli
+RUN docker-php-ext-install pdo pdo_pgsql
 
 # Habilita mod_rewrite do Apache
 RUN a2enmod rewrite
