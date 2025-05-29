@@ -35,9 +35,11 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
     $result = $stmt->get_result();
 
     echo json_encode(
-        ["data" => $result->fetch_all(MYSQLI_ASSOC), "totalCount" => $result->num_rows, "summary" => null, "groupCount" => null, 'success' => true]
+        ["data" => $result->fetch_all(MYSQLI_ASSOC), 'success' => true]
     );
 
+    //  "totalCount" => $result->num_rows, "summary" => null, "groupCount" => null,
+    
     $stmt->close();
     $conn->close();
 
