@@ -20,10 +20,8 @@ if (!$conn) {
     echo json_encode(["success" => false, "message" => "Erro na conexão com o banco."]);
     exit;
 }
-
 if ($method === 'GET') {
     $mesa = isset($_GET['mesa']) ? intval($_GET['mesa']) : null;
-
     $sql = "SELECT 
                 c.id_produto,
                 p.nome,
@@ -34,7 +32,6 @@ if ($method === 'GET') {
                 c.mesa
             FROM carrinho AS c
             INNER JOIN produtos AS p ON c.id_produto = p.id";
-
     if (!is_null($mesa)) {
         $sql .= " WHERE c.mesa = :mesa";
         $stmt = $conn->prepare($sql);
@@ -42,30 +39,23 @@ if ($method === 'GET') {
     } else {
         $stmt = $conn->prepare($sql);
     }
-
     $stmt->execute();
     $itens = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
     echo json_encode([
         "success" => true,
         "message" => "Consulta realizada com sucesso.",
         "data" => $itens,
         "totalCount" => count($itens)
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-
     ob_end_flush();
     exit;
-}
-
-if ($method === 'POST') {
+} else if ($method === 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
-
     if (!isset($data['id_produto'], $data['quantidade'], $data['mesa'], $data['totalvalor'])) {
         http_response_code(400);
         echo json_encode(["success" => false, "message" => "Dados incompletos para inserir no carrinho."]);
         exit;
     }
-
     // Verifica se o item já existe para a mesa
     $sqlCheck = "SELECT id, quantidade FROM carrinho WHERE id_produto = :id_produto AND mesa = :mesa";
     $stmtCheck = $conn->prepare($sqlCheck);
@@ -74,7 +64,6 @@ if ($method === 'POST') {
         ':mesa' => $data['mesa']
     ]);
     $row = $stmtCheck->fetch(PDO::FETCH_ASSOC);
-
     if ($row) {
         $novaQuantidade = $row['quantidade'] + $data['quantidade'];
         $sqlUpdate = "UPDATE carrinho SET quantidade = :quantidade, \"totalvalor\" = :totalvalor WHERE id = :id";
@@ -84,7 +73,6 @@ if ($method === 'POST') {
             ':totalvalor' => $data['totalvalor'],
             ':id' => $row['id']
         ]);
-
         echo json_encode(["success" => true, "message" => "Quantidade atualizada com sucesso no carrinho."]);
     } else {
         $sqlInsert = "INSERT INTO carrinho (id_produto, quantidade, \"totalvalor\", mesa) VALUES (:id_produto, :quantidade, :totalvalor, :mesa)";
@@ -95,41 +83,31 @@ if ($method === 'POST') {
             ':totalvalor' => $data['totalvalor'],
             ':mesa' => $data['mesa']
         ]);
-
         echo json_encode(["success" => true, "message" => "Produto adicionado ao carrinho."]);
     }
-
     ob_end_flush();
     exit;
-}
-
-if ($method === 'PUT') {
+} else if ($method === 'PUT') {
     $input = json_decode(file_get_contents("php://input"), true);
-
     if (!isset($input['id_produto'], $input['mesa'], $input['quantidade'])) {
         http_response_code(400);
         echo json_encode(["success" => false, "message" => "Dados insuficientes para atualizar o carrinho."]);
         exit;
     }
-
     $id_produto = intval($input['id_produto']);
     $mesa = intval($input['mesa']);
     $quantidade = intval($input['quantidade']);
-
     // Buscar o preço unitário
     $stmtPreco = $conn->prepare("SELECT valor FROM produtos WHERE id = :id");
     $stmtPreco->execute([':id' => $id_produto]);
     $produto = $stmtPreco->fetch(PDO::FETCH_ASSOC);
-
     if (!$produto) {
         http_response_code(404);
         echo json_encode(["success" => false, "message" => "Produto não encontrado."]);
         exit;
     }
-
     $preco_unitario = floatval($produto['valor']);
     $totalvalor = $quantidade * $preco_unitario;
-
     $sqlUpdate = "UPDATE carrinho SET quantidade = :quantidade, \"totalvalor\" = :totalvalor WHERE id_produto = :id_produto AND mesa = :mesa";
     $stmtUpdate = $conn->prepare($sqlUpdate);
     $stmtUpdate->execute([
@@ -138,21 +116,15 @@ if ($method === 'PUT') {
         ':id_produto' => $id_produto,
         ':mesa' => $mesa
     ]);
-
     echo json_encode(["success" => true, "message" => "Produto atualizado com sucesso no carrinho."]);
     ob_end_flush();
     exit;
-}
-
-if ($method === 'DELETE') {
+} else if ($method === 'DELETE') {
     parse_str(file_get_contents("php://input"), $data);
-
     $id_produto = $data['id_produto'] ?? $_GET['id_produto'] ?? null;
     $id_mesa = $data['id_mesa'] ?? $_GET['id_mesa'] ?? null;
-
     if ($id_produto && $id_mesa) {
         $conn->beginTransaction();
-
         try {
             // 1. Inserir novo pedido com id_status = 2
             $stmtPedido = $conn->prepare("
@@ -163,16 +135,6 @@ if ($method === 'DELETE') {
                 ':idmesa' => $id_mesa,
                 ':idproduto' => $id_produto
             ]);
-
-            // 2. Pegar o último ID inserido (idpedido)
-            $id_pedido = $conn->lastInsertId();
-
-            // 3. Inserir na tabela cozinha
-            $stmtCozinha = $conn->prepare("
-                INSERT INTO cozinha (idpedido) VALUES (:idpedido)
-            ");
-            $stmtCozinha->execute([':idpedido' => $id_pedido]);
-
             // 4. Deletar do carrinho
             $stmtDelete = $conn->prepare("
                 DELETE FROM carrinho WHERE id_produto = :id_produto AND mesa = :mesa
@@ -181,9 +143,7 @@ if ($method === 'DELETE') {
                 ':id_produto' => $id_produto,
                 ':mesa' => $id_mesa
             ]);
-
             $conn->commit();
-
             echo json_encode(["success" => true, "message" => "Pedido registrado e item removido do carrinho."]);
         } catch (Exception $e) {
             $conn->rollBack();
