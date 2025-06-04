@@ -19,7 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
                 p2.descricao,
                 m.numero AS numero_mesa
             FROM pedido p
-            INNER JOIN produtos p2 ON p.idProduto = p2.id
+            INNER JOIN produtos p2 ON p.idproduto = p2.id
             INNER JOIN mesa m ON m.id = p.idMesa
             INNER JOIN status s ON p.id_status = s.id";
 
@@ -49,13 +49,13 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
 
-    if (!isset($data['numeroMesa'], $data['idProduto'])) {
+    if (!isset($data['numeroMesa'], $data['idproduto'])) {
         echo json_encode(["success" => false, "message" => "Dados incompletos."]);
         exit;
     }
 
     $numeroMesa = $data['numeroMesa'];
-    $idProduto = $data['idProduto'];
+    $idproduto = $data['idproduto'];
     $idStatus = 2;
 
     $stmtMesa = $conn->prepare("SELECT id FROM mesa WHERE numero = :numero LIMIT 1");
@@ -66,9 +66,9 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
     if ($mesa) {
         $idMesa = $mesa['id'];
 
-        $stmtInsert = $conn->prepare("INSERT INTO pedido (idMesa, idProduto, id_status) VALUES (:idMesa, :idProduto, :idStatus)");
+        $stmtInsert = $conn->prepare("INSERT INTO pedido (idMesa, idproduto, id_status) VALUES (:idMesa, :idproduto, :idStatus)");
         $stmtInsert->bindValue(':idMesa', $idMesa, PDO::PARAM_INT);
-        $stmtInsert->bindValue(':idProduto', $idProduto, PDO::PARAM_INT);
+        $stmtInsert->bindValue(':idproduto', $idproduto, PDO::PARAM_INT);
         $stmtInsert->bindValue(':idStatus', $idStatus, PDO::PARAM_INT);
 
         if ($stmtInsert->execute()) {
