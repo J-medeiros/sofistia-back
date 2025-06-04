@@ -7,9 +7,7 @@ require_once(BASE_PATH);
 header('Content-Type: application/json; charset=utf-8');
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, PUT, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
-header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
-
+header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authorization");
 
 // Função para resposta JSON padronizada
 function respostaJson($success, $message, $data = null, $extra = []) {
@@ -28,54 +26,39 @@ function respostaJson($success, $message, $data = null, $extra = []) {
     exit;
 }
 
-// Conexão ($conn) já está disponível via conection.php
-
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET') {
-    // Podemos receber um filtro para buscar mesa por número ou listar todas
     $numero = isset($_GET['numero']) ? intval($_GET['numero']) : null;
     $onlyDisponiveis = isset($_GET['disponiveis']) && $_GET['disponiveis'] === '1';
 
     $sql = "SELECT id, numero, responsavel FROM mesa";
     $params = [];
-    $types = "";
 
     if ($numero !== null) {
-        $sql .= " WHERE numero = ?";
-        $types .= "i";
-        $params[] = $numero;
+        $sql .= " WHERE numero = :numero";
+        $params[':numero'] = $numero;
     } elseif ($onlyDisponiveis) {
         $sql .= " WHERE responsavel IS NULL OR responsavel = ''";
     }
 
     $sql .= " ORDER BY numero ASC";
 
-    $stmt = $conn->prepare($sql);
-    if ($stmt === false) {
-        respostaJson(false, "Erro ao preparar consulta: " . $conn->error);
-    }
+    try {
+        $stmt = $conn->prepare($sql);
+        foreach ($params as $key => $val) {
+            $stmt->bindValue($key, $val, PDO::PARAM_INT);
+        }
 
-    if (!empty($params)) {
-        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+        $mesas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        respostaJson(true, "Mesas listadas com sucesso.", $mesas);
+    } catch (PDOException $e) {
+        respostaJson(false, "Erro ao executar consulta: " . $e->getMessage());
     }
-
-    if (!$stmt->execute()) {
-        respostaJson(false, "Erro ao executar consulta: " . $stmt->error);
-    }
-
-    $result = $stmt->get_result();
-    $mesas = [];
-    while ($row = $result->fetch_assoc()) {
-        $mesas[] = $row;
-    }
-    $stmt->close();
-
-    respostaJson(true, "Mesas listadas com sucesso.", $mesas);
 }
 
 if ($method === 'PUT') {
-    // Recebe JSON
     $input = json_decode(file_get_contents("php://input"), true);
     if (!$input || !isset($input['numero']) || !isset($input['responsavel'])) {
         respostaJson(false, "Dados incompletos. É necessário 'numero' e 'responsavel'.");
@@ -88,39 +71,33 @@ if ($method === 'PUT') {
         respostaJson(false, "Número da mesa inválido ou responsável vazio.");
     }
 
-    // Verifica se a mesa existe
-    $stmt = $conn->prepare("SELECT id FROM mesa WHERE numero = ?");
-    if ($stmt === false) {
-        respostaJson(false, "Erro ao preparar consulta: " . $conn->error);
-    }
-    $stmt->bind_param("i", $numero);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    if ($result->num_rows === 0) {
-        respostaJson(false, "Mesa não encontrada.");
-    }
-    $stmt->close();
+    try {
+        // Verifica se a mesa existe
+        $stmt = $conn->prepare("SELECT id FROM mesa WHERE numero = :numero");
+        $stmt->bindValue(':numero', $numero, PDO::PARAM_INT);
+        $stmt->execute();
 
-    // Atualiza responsável (não permite mesa duplicada com mesmo responsável pois número é único)
-    $stmt = $conn->prepare("UPDATE mesa SET responsavel = ? WHERE numero = ?");
-    if ($stmt === false) {
-        respostaJson(false, "Erro ao preparar atualização: " . $conn->error);
-    }
-    $stmt->bind_param("si", $responsavel, $numero);
-    if (!$stmt->execute()) {
-        respostaJson(false, "Erro ao atualizar mesa: " . $stmt->error);
-    }
-    $stmt->close();
+        if ($stmt->rowCount() === 0) {
+            respostaJson(false, "Mesa não encontrada.");
+        }
 
-    respostaJson(true, "Mesa atualizada com sucesso.");
+        // Atualiza responsável
+        $stmt = $conn->prepare("UPDATE mesa SET responsavel = :responsavel WHERE numero = :numero");
+        $stmt->bindValue(':responsavel', $responsavel, PDO::PARAM_STR);
+        $stmt->bindValue(':numero', $numero, PDO::PARAM_INT);
+        $stmt->execute();
+
+        respostaJson(true, "Mesa atualizada com sucesso.");
+    } catch (PDOException $e) {
+        respostaJson(false, "Erro ao atualizar mesa: " . $e->getMessage());
+    }
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+if ($method === 'OPTIONS') {
     header('HTTP/1.1 200 OK');
     exit;
 }
 
-// Se método não suportado
 http_response_code(405);
 respostaJson(false, "Método HTTP não permitido.");
 
