@@ -11,47 +11,42 @@ header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Ac
 
 
 if ($_SERVER["REQUEST_METHOD"] === "GET") {
-
     $filtro = isset($_GET['filtro']) ? $_GET['filtro'] : null;
     $id = isset($_GET['id']) ? $_GET['id'] : null;
 
-    $sql = "select 
-p.id,
-s.status ,
-p2.nome ,
-p2.descricao ,
-m.numero as numero_mesa
-from pedido p 
-inner join produtos p2 on p.idProduto = p2.id 
-inner join mesa m on m.id = p.idMesa 
-inner join status s on p.id_status = s.id";
+    $sql = "SELECT 
+                p.id,
+                s.status,
+                p2.nome,
+                p2.descricao,
+                m.numero AS numero_mesa
+            FROM pedido p
+            INNER JOIN produtos p2 ON p.idProduto = p2.id
+            INNER JOIN mesa m ON m.id = p.idMesa
+            INNER JOIN status s ON p.id_status = s.id";
 
-    // Verifica qual parâmetro está presente e ajusta a condição WHERE
     if (!empty($filtro) && empty($id)) {
-        $sql .= " WHERE nome LIKE ?";
+        $sql .= " WHERE p2.nome ILIKE :filtro";
         $stmt = $conn->prepare($sql);
-        $filtro = "%$filtro%";
-        $stmt->bind_param("s", $filtro);
+        $stmt->bindValue(':filtro', "%$filtro%", PDO::PARAM_STR);
     } else if (empty($filtro) && !empty($id)) {
-        $sql .= " WHERE id = ?";
+        $sql .= " WHERE p.id = :id";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $id); // Assumindo que o campo id é um número inteiro
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
     } else {
-        // Caso ambos os parâmetros estejam vazios ou ambos presentes, trata conforme necessário
         $stmt = $conn->prepare($sql);
     }
 
     $stmt->execute();
-    $result = $stmt->get_result();
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    echo json_encode(
-        ["data" => $result->fetch_all(MYSQLI_ASSOC), "totalCount" => $result->num_rows, "summary" => null, "groupCount" => null, 'success' => true]
-    );
-
-    $stmt->close();
-    $conn->close();
-
-    // Metodo de inserir dados 
+    echo json_encode([
+        "data" => $result,
+        "totalCount" => count($result),
+        "summary" => null,
+        "groupCount" => null,
+        "success" => true
+    ]);
 } else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
 
