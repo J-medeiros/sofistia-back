@@ -30,7 +30,7 @@ if ($method === 'GET') {
                 p.descricao,
                 p.image,
                 c.quantidade,
-                c.\"totalValor\",
+                c.\"totalvalor\",
                 c.mesa
             FROM carrinho AS c
             INNER JOIN produtos AS p ON c.id_produto = p.id";
@@ -77,22 +77,22 @@ if ($method === 'POST') {
 
     if ($row) {
         $novaQuantidade = $row['quantidade'] + $data['quantidade'];
-        $sqlUpdate = "UPDATE carrinho SET quantidade = :quantidade, \"totalValor\" = :totalValor WHERE id = :id";
+        $sqlUpdate = "UPDATE carrinho SET quantidade = :quantidade, \"totalvalor\" = :totalvalor WHERE id = :id";
         $stmtUpdate = $conn->prepare($sqlUpdate);
         $stmtUpdate->execute([
             ':quantidade' => $novaQuantidade,
-            ':totalValor' => $data['totalValor'],
+            ':totalvalor' => $data['totalValor'],
             ':id' => $row['id']
         ]);
 
         echo json_encode(["success" => true, "message" => "Quantidade atualizada com sucesso no carrinho."]);
     } else {
-        $sqlInsert = "INSERT INTO carrinho (id_produto, quantidade, \"totalValor\", mesa) VALUES (:id_produto, :quantidade, :totalValor, :mesa)";
+        $sqlInsert = "INSERT INTO carrinho (id_produto, quantidade, \"totalvalor\", mesa) VALUES (:id_produto, :quantidade, :totalValor, :mesa)";
         $stmtInsert = $conn->prepare($sqlInsert);
         $stmtInsert->execute([
             ':id_produto' => $data['id_produto'],
             ':quantidade' => $data['quantidade'],
-            ':totalValor' => $data['totalValor'],
+            ':totalvalor' => $data['totalValor'],
             ':mesa' => $data['mesa']
         ]);
 
@@ -130,11 +130,11 @@ if ($method === 'PUT') {
     $preco_unitario = floatval($produto['valor']);
     $totalValor = $quantidade * $preco_unitario;
 
-    $sqlUpdate = "UPDATE carrinho SET quantidade = :quantidade, \"totalValor\" = :totalValor WHERE id_produto = :id_produto AND mesa = :mesa";
+    $sqlUpdate = "UPDATE carrinho SET quantidade = :quantidade, \"totalvalor\" = :totalvalor WHERE id_produto = :id_produto AND mesa = :mesa";
     $stmtUpdate = $conn->prepare($sqlUpdate);
     $stmtUpdate->execute([
         ':quantidade' => $quantidade,
-        ':totalValor' => $totalValor,
+        ':totalvalor' => $totalValor,
         ':id_produto' => $id_produto,
         ':mesa' => $mesa
     ]);
