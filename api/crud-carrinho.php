@@ -150,18 +150,30 @@ if ($method === 'DELETE') {
     $id_produto = $data['id_produto'] ?? $_GET['id_produto'] ?? null;
     $id_mesa = $data['id_mesa'] ?? $_GET['id_mesa'] ?? null;
 
-    if($id_produto){
-        $stmt = $conn->prepare("INSERT INTO cozinha (id_produto) VALUES (:id_produto)");
-        $stmt->execute([':id_produto' => $id_produto]);
-    }
     if ($id_produto && $id_mesa) {
-        $stmt = $conn->prepare("DELETE FROM carrinho WHERE id_produto = :id_produto AND mesa = :mesa");
-        $stmt->execute([
-            ':id_produto' => $id_produto,
-            ':mesa' => $id_mesa
-        ]);
+        // Começa uma transação para garantir atomicidade
+        $conn->beginTransaction();
 
-        echo json_encode(["success" => true, "message" => "Item removido com sucesso"]);
+        try {
+            // Insere na tabela cozinha
+            $insertStmt = $conn->prepare("INSERT INTO cozinha (id_produto) VALUES (:id_produto)");
+            $insertStmt->execute([':id_produto' => $id_produto]);
+
+            // Deleta do carrinho
+            $deleteStmt = $conn->prepare("DELETE FROM carrinho WHERE id_produto = :id_produto AND mesa = :mesa");
+            $deleteStmt->execute([
+                ':id_produto' => $id_produto,
+                ':mesa' => $id_mesa
+            ]);
+
+            $conn->commit();
+
+            echo json_encode(["success" => true, "message" => "Item enviado para cozinha e removido do carrinho com sucesso."]);
+        } catch (Exception $e) {
+            $conn->rollBack();
+            http_response_code(500);
+            echo json_encode(["success" => false, "message" => "Erro ao mover item para cozinha.", "error" => $e->getMessage()]);
+        }
     } else {
         http_response_code(400);
         echo json_encode(["success" => false, "message" => "Parâmetros id_produto e id_mesa são obrigatórios"]);
