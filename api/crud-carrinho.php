@@ -151,7 +151,7 @@ if ($method === 'DELETE') {
     $id_mesa = $data['id_mesa'] ?? $_GET['id_mesa'] ?? null;
 
     if($id_produto){
-        $stmt = $conn->prepare("INSERT INTO COZINHA (id_produto) VALUES (:id_produto)");
+        $stmt = $conn->prepare("INSERT INTO cozinha (id_produto) VALUES (:id_produto)");
         $stmt->execute([':id_produto' => $id_produto]);
     }
     if ($id_produto && $id_mesa) {
