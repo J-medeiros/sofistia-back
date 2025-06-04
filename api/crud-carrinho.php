@@ -60,7 +60,7 @@ if ($method === 'GET') {
 if ($method === 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
 
-    if (!isset($data['id_produto'], $data['quantidade'], $data['mesa'], $data['totalValor'])) {
+    if (!isset($data['id_produto'], $data['quantidade'], $data['mesa'], $data['totalvalor'])) {
         http_response_code(400);
         echo json_encode(["success" => false, "message" => "Dados incompletos para inserir no carrinho."]);
         exit;
@@ -81,18 +81,18 @@ if ($method === 'POST') {
         $stmtUpdate = $conn->prepare($sqlUpdate);
         $stmtUpdate->execute([
             ':quantidade' => $novaQuantidade,
-            ':totalvalor' => $data['totalValor'],
+            ':totalvalor' => $data['totalvalor'],
             ':id' => $row['id']
         ]);
 
         echo json_encode(["success" => true, "message" => "Quantidade atualizada com sucesso no carrinho."]);
     } else {
-        $sqlInsert = "INSERT INTO carrinho (id_produto, quantidade, \"totalvalor\", mesa) VALUES (:id_produto, :quantidade, :totalValor, :mesa)";
+        $sqlInsert = "INSERT INTO carrinho (id_produto, quantidade, \"totalvalor\", mesa) VALUES (:id_produto, :quantidade, :totalvalor, :mesa)";
         $stmtInsert = $conn->prepare($sqlInsert);
         $stmtInsert->execute([
             ':id_produto' => $data['id_produto'],
             ':quantidade' => $data['quantidade'],
-            ':totalvalor' => $data['totalValor'],
+            ':totalvalor' => $data['totalvalor'],
             ':mesa' => $data['mesa']
         ]);
 
@@ -128,13 +128,13 @@ if ($method === 'PUT') {
     }
 
     $preco_unitario = floatval($produto['valor']);
-    $totalValor = $quantidade * $preco_unitario;
+    $totalvalor = $quantidade * $preco_unitario;
 
     $sqlUpdate = "UPDATE carrinho SET quantidade = :quantidade, \"totalvalor\" = :totalvalor WHERE id_produto = :id_produto AND mesa = :mesa";
     $stmtUpdate = $conn->prepare($sqlUpdate);
     $stmtUpdate->execute([
         ':quantidade' => $quantidade,
-        ':totalvalor' => $totalValor,
+        ':totalvalor' => $totalvalor,
         ':id_produto' => $id_produto,
         ':mesa' => $mesa
     ]);
