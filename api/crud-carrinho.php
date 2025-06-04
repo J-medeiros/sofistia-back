@@ -151,28 +151,44 @@ if ($method === 'DELETE') {
     $id_mesa = $data['id_mesa'] ?? $_GET['id_mesa'] ?? null;
 
     if ($id_produto && $id_mesa) {
-        // Começa uma transação para garantir atomicidade
         $conn->beginTransaction();
 
         try {
-            // Insere na tabela cozinha
-            $insertStmt = $conn->prepare("INSERT INTO cozinha (id_produto) VALUES (:id_produto)");
-            $insertStmt->execute([':id_produto' => $id_produto]);
+            // 1. Inserir novo pedido com id_status = 2
+            $stmtPedido = $conn->prepare("
+                INSERT INTO pedido (idmesa, idproduto, id_status, criado_em)
+                VALUES (:idmesa, :idproduto, 2, CURRENT_TIMESTAMP)
+            ");
+            $stmtPedido->execute([
+                ':idmesa' => $id_mesa,
+                ':idproduto' => $id_produto
+            ]);
 
-            // Deleta do carrinho
-            $deleteStmt = $conn->prepare("DELETE FROM carrinho WHERE id_produto = :id_produto AND mesa = :mesa");
-            $deleteStmt->execute([
+            // 2. Pegar o último ID inserido (idpedido)
+            $id_pedido = $conn->lastInsertId();
+
+            // 3. Inserir na tabela cozinha
+            $stmtCozinha = $conn->prepare("
+                INSERT INTO cozinha (idpedido) VALUES (:idpedido)
+            ");
+            $stmtCozinha->execute([':idpedido' => $id_pedido]);
+
+            // 4. Deletar do carrinho
+            $stmtDelete = $conn->prepare("
+                DELETE FROM carrinho WHERE id_produto = :id_produto AND mesa = :mesa
+            ");
+            $stmtDelete->execute([
                 ':id_produto' => $id_produto,
                 ':mesa' => $id_mesa
             ]);
 
             $conn->commit();
 
-            echo json_encode(["success" => true, "message" => "Item enviado para cozinha e removido do carrinho com sucesso."]);
+            echo json_encode(["success" => true, "message" => "Pedido registrado e item removido do carrinho."]);
         } catch (Exception $e) {
             $conn->rollBack();
             http_response_code(500);
-            echo json_encode(["success" => false, "message" => "Erro ao mover item para cozinha.", "error" => $e->getMessage()]);
+            echo json_encode(["success" => false, "message" => "Erro ao registrar pedido e enviar para cozinha.", "error" => $e->getMessage()]);
         }
     } else {
         http_response_code(400);
