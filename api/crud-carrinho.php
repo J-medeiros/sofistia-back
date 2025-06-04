@@ -150,6 +150,14 @@ if ($method === 'DELETE') {
     $id_produto = $data['id_produto'] ?? $_GET['id_produto'] ?? null;
     $id_mesa = $data['id_mesa'] ?? $_GET['id_mesa'] ?? null;
 
+    if($id_produto){
+        $stmt = $conn->prepare("INSET INTO COZINHA (id_produto) VALUES (:id_produto)");
+        $stmt->execute([':id_produto' => $id_produto]);
+        $stmt->execute([
+            ':id_produto' => $id_produto,
+            ':mesa' => $id_mesa
+        ]);
+    }
     if ($id_produto && $id_mesa) {
         $stmt = $conn->prepare("DELETE FROM carrinho WHERE id_produto = :id_produto AND mesa = :mesa");
         $stmt->execute([
