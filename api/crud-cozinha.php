@@ -19,17 +19,17 @@ if ($method === "GET") {
     try {
         $sql = "SELECT 
             p.id,
-            p.\"idMesa\",
+            p.idmesa,
             m.numero,
             m.responsavel,
-            p.status,
+            p.id_status,
+            s.status,
             pr.nome AS produto_nome,
             pr.valor
         FROM pedido p
-        INNER JOIN produtos pr ON p.\"idProduto\" = pr.id
-        INNER JOIN mesa m ON p.\"idMesa\" = m.id
-        WHERE p.status = false
-        ORDER BY p.id ASC";
+        INNER JOIN produtos pr ON p.idproduto = pr.id
+        INNER JOIN mesa m ON p.idmesa = m.id
+        INNER JOIN status s ON p.id_status = s.id";
 
         $stmt = $conn->query($sql);
         $dados = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -43,7 +43,6 @@ if ($method === "GET") {
         http_response_code(500);
         echo json_encode(["success" => false, "message" => "Erro ao buscar pedidos: " . $e->getMessage()]);
     }
-
 } elseif ($method === "PUT") {
     $id = isset($_GET['id']) ? intval($_GET['id']) : null;
 
@@ -63,7 +62,6 @@ if ($method === "GET") {
         http_response_code(500);
         echo json_encode(["success" => false, "message" => "Erro ao atualizar pedido: " . $e->getMessage()]);
     }
-
 } else {
     http_response_code(405);
     echo json_encode(["error" => "Método inválido. Apenas GET e PUT são permitidos."]);

@@ -30,7 +30,7 @@ if ($method === 'GET') {
                 p.descricao,
                 p.image,
                 c.quantidade,
-                c.\"totalvalor\",
+                c.totalvalor ,
                 c.mesa
             FROM carrinho AS c
             INNER JOIN produtos AS p ON c.id_produto = p.id";
