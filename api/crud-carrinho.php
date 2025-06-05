@@ -126,15 +126,6 @@ if ($method === 'GET') {
     if ($id_produto && $id_mesa) {
         $conn->beginTransaction();
         try {
-            // 1. Inserir novo pedido com id_status = 2
-            $stmtPedido = $conn->prepare("
-                INSERT INTO pedido (idmesa, idproduto, id_status, criado_em)
-                VALUES (:idmesa, :idproduto, 2, CURRENT_TIMESTAMP)
-            ");
-            $stmtPedido->execute([
-                ':idmesa' => $id_mesa,
-                ':idproduto' => $id_produto
-            ]);
             // 4. Deletar do carrinho
             $stmtDelete = $conn->prepare("
                 DELETE FROM carrinho WHERE id_produto = :id_produto AND mesa = :mesa
