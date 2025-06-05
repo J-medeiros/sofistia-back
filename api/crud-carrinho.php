@@ -120,33 +120,23 @@ if ($method === 'GET') {
     ob_end_flush();
     exit;
 } else if ($method === 'DELETE') {
-    parse_str(file_get_contents("php://input"), $data);
+    $data = json_decode(file_get_contents("php://input"), true);
+    $mesa = $data['mesa'] ?? null;
+    $id = $_GET['id'] ?? null;
 
-    $id_produto = $data['id_produto'] ?? $_GET['id_produto'] ?? null;
-    $id_mesa = $data['id_mesa'] ?? $_GET['id_mesa'] ?? null;
+    if ($mesa) {
+        $stmt2 = $conn->prepare("DELETE FROM carrinho WHERE mesa = :mesa");
+        $stmt2->bindValue(':mesa', $mesa, PDO::PARAM_INT);
+        $success2 = $stmt2->execute();
 
-    if ($id_produto && $id_mesa) {
-        try {
-            $stmt = $conn->prepare("DELETE FROM carrinho WHERE id_produto = :id_produto AND mesa = :mesa");
-            $stmt->execute([
-                ':id_produto' => $id_produto,
-                ':mesa' => $id_mesa
-            ]);
-
-            echo json_encode(["success" => true, "message" => "Item removido do carrinho com sucesso."]);
-        } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
-                "success" => false,
-                "message" => "Erro ao remover item do carrinho.",
-                "error" => $e->getMessage()
-            ]);
+        if ($success1 && $success2) {
+            echo json_encode(["success" => true, "message" => "Carrinho e pedido limpos com sucesso."]);
+        } else {
+            echo json_encode(["success" => false, "message" => "Erro ao limpar carrinho ."]);
         }
     } else {
-        http_response_code(400);
-        echo json_encode([
-            "success" => false,
-            "message" => "Parâmetros id_produto e id_mesa são obrigatórios."
-        ]);
+        echo json_encode(["success" => false, "message" => "Parâmetro 'mesa' ou 'id' não fornecido."]);
     }
+} else {
+    echo json_encode(["success" => false, "message" => "Método não suportado."]);
 }

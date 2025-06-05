@@ -45,7 +45,6 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
         "groupCount" => null,
         "success" => true
     ]);
-
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
 
@@ -79,7 +78,6 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
     } else {
         echo json_encode(["success" => false, "message" => "Mesa com número $numeroMesa não encontrada."]);
     }
-
 } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     parse_str($_SERVER['QUERY_STRING'], $query);
     $id = $query['id'] ?? null;
@@ -107,17 +105,12 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
     } else {
         echo json_encode(["success" => false, "message" => "Erro na atualização."]);
     }
-
 } elseif ($_SERVER["REQUEST_METHOD"] === "DELETE") {
     $data = json_decode(file_get_contents("php://input"), true);
     $mesa = $data['mesa'] ?? null;
     $id = $_GET['id'] ?? null;
 
     if ($mesa) {
-        $stmt1 = $conn->prepare("DELETE FROM pedido WHERE idMesa = :mesa");
-        $stmt1->bindValue(':mesa', $mesa, PDO::PARAM_INT);
-        $success1 = $stmt1->execute();
-
         $stmt2 = $conn->prepare("DELETE FROM carrinho WHERE mesa = :mesa");
         $stmt2->bindValue(':mesa', $mesa, PDO::PARAM_INT);
         $success2 = $stmt2->execute();
@@ -125,20 +118,11 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
         if ($success1 && $success2) {
             echo json_encode(["success" => true, "message" => "Carrinho e pedido limpos com sucesso."]);
         } else {
-            echo json_encode(["success" => false, "message" => "Erro ao limpar carrinho e pedido."]);
-        }
-    } elseif ($id) {
-        $stmt = $conn->prepare("DELETE FROM pedido WHERE id = :id");
-        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
-        if ($stmt->execute()) {
-            echo json_encode(["success" => true, "message" => "Pedido deletado com sucesso."]);
-        } else {
-            echo json_encode(["success" => false, "message" => "Erro ao deletar pedido."]);
+            echo json_encode(["success" => false, "message" => "Erro ao limpar carrinho ."]);
         }
     } else {
         echo json_encode(["success" => false, "message" => "Parâmetro 'mesa' ou 'id' não fornecido."]);
     }
-
 } else {
     echo json_encode(["success" => false, "message" => "Método não suportado."]);
 }
