@@ -121,28 +121,32 @@ if ($method === 'GET') {
     exit;
 } else if ($method === 'DELETE') {
     parse_str(file_get_contents("php://input"), $data);
+
     $id_produto = $data['id_produto'] ?? $_GET['id_produto'] ?? null;
     $id_mesa = $data['id_mesa'] ?? $_GET['id_mesa'] ?? null;
+
     if ($id_produto && $id_mesa) {
-        $conn->beginTransaction();
         try {
-            // 4. Deletar do carrinho
-            $stmtDelete = $conn->prepare("
-                DELETE FROM carrinho WHERE id_produto = :id_produto AND mesa = :mesa
-            ");
-            $stmtDelete->execute([
+            $stmt = $conn->prepare("DELETE FROM carrinho WHERE id_produto = :id_produto AND mesa = :mesa");
+            $stmt->execute([
                 ':id_produto' => $id_produto,
                 ':mesa' => $id_mesa
             ]);
-            $conn->commit();
-            echo json_encode(["success" => true, "message" => "Pedido registrado e item removido do carrinho."]);
+
+            echo json_encode(["success" => true, "message" => "Item removido do carrinho com sucesso."]);
         } catch (Exception $e) {
-            $conn->rollBack();
             http_response_code(500);
-            echo json_encode(["success" => false, "message" => "Erro ao registrar pedido e enviar para cozinha.", "error" => $e->getMessage()]);
+            echo json_encode([
+                "success" => false,
+                "message" => "Erro ao remover item do carrinho.",
+                "error" => $e->getMessage()
+            ]);
         }
     } else {
         http_response_code(400);
-        echo json_encode(["success" => false, "message" => "Parâmetros id_produto e id_mesa são obrigatórios"]);
+        echo json_encode([
+            "success" => false,
+            "message" => "Parâmetros id_produto e id_mesa são obrigatórios."
+        ]);
     }
 }
